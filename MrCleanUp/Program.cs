@@ -8,7 +8,7 @@ namespace MrCleanUp
     class Program
     {
         static List<string> allowFormats = new List<string> { "taglib/wma", "taglib/mp3" };
-        static string input = @"C:\Users\Kong Heinse\Desktop\SharingBandit\Musik\Musik til oprydning\Top 500 Rock And Roll Songs"; // @"C:\Users\Kong Heinse\Desktop\SharingBandit\Musik"; C:\Users\Kong Heinse\Desktop\SharingBandit\Musik\Musik til oprydning\Fimses Musik
+        static string input = @"C:\Users\Kong Heinse\Desktop\SharingBandit\Musik"; // @"C:\Users\Kong Heinse\Desktop\SharingBandit\Musik"; 
         static string output = @"c:\temp\output";
         static Regex RemoveChars = new Regex(@"[\\/:*?""<>|]");
 
@@ -23,7 +23,7 @@ namespace MrCleanUp
             Console.ReadLine();
         }
 
-        static void MapFiles (string directory)        
+        static void MapFiles(string directory)
         {
             Console.WriteLine(directory);
 
@@ -31,24 +31,48 @@ namespace MrCleanUp
 
             foreach (var file in files)
             {
-                TagLib.File f = TagLib.File.Create(file);
-                /*
-                Console.WriteLine(f.Tag.JoinedPerformers);
-                Console.WriteLine(f.Tag.Title);
-                Console.WriteLine(f.Tag.Album);
-                Console.WriteLine(f.MimeType);   
-                */
+                try
+                {
+                    TagLib.File f = TagLib.File.Create(file);
+                    /*
+                    Console.WriteLine(f.Tag.JoinedPerformers);
+                    Console.WriteLine(f.Tag.Title);
+                    Console.WriteLine(f.Tag.Album);
+                    Console.WriteLine(f.MimeType);   
+                    */
 
-                string type = f.MimeType.Split(@"/")[1];
-                string artists = f.Tag.JoinedPerformers != null ? f.Tag.JoinedPerformers : "";
-                string album = f.Tag.Album != null ? f.Tag.Album : "";
+                    string type = f.MimeType.Split(@"/")[1];
 
-                SaveFile(file, 
-                         RemoveChars.Replace(type, ""), 
-                         RemoveChars.Replace(artists, ""), 
-                         RemoveChars.Replace(album, "")
-                         );
-            }
+                    if (type != "taglib/ini")
+                    {
+                        string artists = f.Tag.JoinedPerformers != null ? f.Tag.JoinedPerformers : "";
+                        string album = f.Tag.Album != null ? f.Tag.Album : "";
+
+                        SaveMediaFile(file,
+                                 RemoveChars.Replace(type, ""),
+                                 RemoveChars.Replace(artists, ""),
+                                 RemoveChars.Replace(album, "")
+                                 );
+                    }
+                }
+                catch (Exception e)
+                {
+
+                    // Console.ReadKey();
+                    try
+                    {
+                        SaveFile(file);
+                    }
+
+                    catch (Exception expt)
+                    {
+                        Console.WriteLine(expt.Message);
+                        continue;
+                    }
+                    Console.WriteLine(e.Message);
+                    continue;
+                }
+            }             
 
             var dirs = Directory.GetDirectories(directory);
 
@@ -56,16 +80,49 @@ namespace MrCleanUp
             {
                 MapFiles(dir);
             }
+
+            if (Directory.GetFiles(directory).Length == 0 &&
+            Directory.GetDirectories(directory).Length == 0)
+            {               
+                // Directory.Delete(directory, false);
+            }
         }
 
-        static void SaveFile (string file, string type, string artist, string album)
+        static void SaveMediaFile (string file, string type, string artist, string album)
         {
+            string fileName = file.Split('.')[0];
+
+            if (fileName.Contains(@"\"))
+            {
+                int index = fileName.LastIndexOf(@"\");
+                fileName = fileName.Substring(index);
+            }
+
             // var fil = File.ReadAllBytes(file);
             string basePath = output + @"\" + type.ToUpper() + @"\" + artist + @"\" + album + @"\";
-            string path = basePath + file.Split('.')[0].Substring(file.LastIndexOf(@"\")) + "." + type.ToLower();
+            string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
             File.Move(file, path, true);
             // File.WriteAllBytes(path, fil);
+
+            Console.WriteLine(path);
+        }
+
+        static void SaveFile(string file)
+        {
+            string fileName = file.Split('.')[0];
+            string type = file.Split('.')[1];
+
+            if (fileName.Contains(@"\"))
+            {
+                int index = fileName.LastIndexOf(@"\");
+                fileName = fileName.Substring(index);
+            }
+
+            string basePath = output + @"\" + type.ToUpper() + @"\";
+            string path = basePath + fileName + "." + type.ToLower();
+            Directory.CreateDirectory(basePath);
+            File.Move(file, path, true);
 
             Console.WriteLine(path);
         }
