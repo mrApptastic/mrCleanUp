@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Packaging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -7,85 +8,88 @@ namespace MrCleanUp
 {
     class Program
     {
-        static List<string> allowFormats = new List<string> { "taglib/wma", "taglib/mp3" };
-        static string input = @"C:\Users\Kong Heinse\Desktop\SharingBandit\Musik"; // @"C:\Users\Kong Heinse\Desktop\SharingBandit\Musik"; 
         static string output = @"c:\temp\output";
         static Regex RemoveChars = new Regex(@"[\\/:*?""<>|]");
+        static bool exit = false;
 
         static void Main(string[] args)
         {
-            // var dir = Directory.GetFiles(input);
-            
-            // Directory.CreateDirectory(output);
-
-            MapFiles(input);
-
-            Console.ReadLine();
+            while (!exit) {
+                Console.WriteLine("Write the absolute root path to activate the clean up script:");
+                string input = Console.ReadLine();
+                MapFiles(input);
+            }                       
         }
 
         static void MapFiles(string directory)
         {
-            Console.WriteLine(directory);
-
-            var files = Directory.GetFiles(directory);
-
-            foreach (var file in files)
+            try
             {
-                try
+                var files = Directory.GetFiles(directory);
+
+                foreach (var file in files)
                 {
-                    TagLib.File f = TagLib.File.Create(file);
-                    /*
-                    Console.WriteLine(f.Tag.JoinedPerformers);
-                    Console.WriteLine(f.Tag.Title);
-                    Console.WriteLine(f.Tag.Album);
-                    Console.WriteLine(f.MimeType);   
-                    */
-
-                    string type = f.MimeType.Split(@"/")[1];
-
-                    if (type != "taglib/ini")
-                    {
-                        string artists = f.Tag.JoinedPerformers != null ? f.Tag.JoinedPerformers : "";
-                        string album = f.Tag.Album != null ? f.Tag.Album : "";
-
-                        SaveMediaFile(file,
-                                 RemoveChars.Replace(type, ""),
-                                 RemoveChars.Replace(artists, ""),
-                                 RemoveChars.Replace(album, "")
-                                 );
-                    }
-                }
-                catch (Exception e)
-                {
-
-                    // Console.ReadKey();
                     try
                     {
-                        SaveFile(file);
-                    }
+                        TagLib.File f = TagLib.File.Create(file);
 
-                    catch (Exception expt)
+                        string type = f.MimeType.Split(@"/")[1];
+
+                        if (type != "taglib/ini")
+                        {
+                            string artists = f.Tag.JoinedPerformers != null ? f.Tag.JoinedPerformers : "";
+                            string album = f.Tag.Album != null ? f.Tag.Album : "";
+
+                            SaveMediaFile(file,
+                                     RemoveChars.Replace(type, "").Trim(),
+                                     RemoveChars.Replace(artists, "").Trim(),
+                                     RemoveChars.Replace(album, "").Trim()
+                                     );
+                        }
+                    }
+                    catch (Exception e)
                     {
-                        Console.WriteLine(expt.Message);
+                        try
+                        {
+                            SaveFile(file);
+                        }
+
+                        catch (Exception expt)
+                        {
+                            Console.WriteLine(expt.Message);
+                            continue;
+                        }
+                        Console.WriteLine(e.Message);
                         continue;
                     }
-                    Console.WriteLine(e.Message);
-                    continue;
                 }
-            }             
 
-            var dirs = Directory.GetDirectories(directory);
+                var dirs = Directory.GetDirectories(directory);
 
-            foreach (var dir in dirs)
+                foreach (var dir in dirs)
+                {
+                    MapFiles(dir + @"\");
+                }
+
+                if (Directory.GetFiles(directory).Length == 0 &&
+                Directory.GetDirectories(directory).Length == 0)
+                {
+                    try
+                    {
+                        Directory.Delete(directory, false);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
+                }
+            }
+            catch (Exception AllExpt)
             {
-                MapFiles(dir);
+                Console.WriteLine(AllExpt.Message);
             }
 
-            if (Directory.GetFiles(directory).Length == 0 &&
-            Directory.GetDirectories(directory).Length == 0)
-            {               
-                // Directory.Delete(directory, false);
-            }
         }
 
         static void SaveMediaFile (string file, string type, string artist, string album)
@@ -98,20 +102,28 @@ namespace MrCleanUp
                 fileName = fileName.Substring(index);
             }
 
-            // var fil = File.ReadAllBytes(file);
-            string basePath = output + @"\" + type.ToUpper() + @"\" + artist + @"\" + album + @"\";
+            string basePath = output + @"\Media\" + type.ToUpper() + @"\" + artist + @"\" + album + @"\";
             string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
-            File.Move(file, path, true);
-            // File.WriteAllBytes(path, fil);
+            if (File.Exists(path))
+            {
+                Console.WriteLine("File already exists: " + path);
+                path = basePath + fileName + "-" + "DUBLET" + "-" + DateTime.Now.Ticks + "." + type.ToLower();
+
+            }
+            File.Move(file, path, false);
 
             Console.WriteLine(path);
         }
 
         static void SaveFile(string file)
         {
-            string fileName = file.Split('.')[0];
-            string type = file.Split('.')[1];
+            string prePath = @"\Other\";
+            string author = "";
+            DateTime modified = File.GetLastWriteTime(file);
+
+            string fileName = file.Substring(0, file.LastIndexOf("."));
+            string type = file.Substring(file.LastIndexOf(".") +1);
 
             if (fileName.Contains(@"\"))
             {
@@ -119,10 +131,39 @@ namespace MrCleanUp
                 fileName = fileName.Substring(index);
             }
 
-            string basePath = output + @"\" + type.ToUpper() + @"\";
+            if (type.ToLower() == "jpg" || 
+                type.ToLower() == "png" || 
+                type.ToLower() == "psd" ||
+                type.ToLower() == "gif" ||
+                type.ToLower() == "tiff"
+                )
+            {
+                prePath = @"\Images\";
+            }
+            else if (type.ToLower() == "doc" || 
+                     type.ToLower() == "docx" || 
+                     type.ToLower() == "txt" || 
+                     type.ToLower() == "rtf" ||
+                     type.ToLower() == "odt" || 
+                     type.ToLower() == "xls" || 
+                     type.ToLower() == "pdf" ||
+                     type.ToLower() == "xlsx"
+                     )
+            {
+                prePath = @"\Documents\";
+            }
+
+            // string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\" + modified.ToString("yyyy-MM-dd") + @"\";
+            string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\";
             string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
-            File.Move(file, path, true);
+            if (File.Exists(path))
+            {
+                Console.WriteLine("File already exists: " + path);
+                path = basePath + fileName + "-" + "DUBLET" + "-" + DateTime.Now.Ticks + "." + type.ToLower();
+
+            }
+            File.Move(file, path, false);
 
             Console.WriteLine(path);
         }

@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.10.1" />
     <PackageReference Include="taglib" Version="2.1.0" />
   </ItemGroup>
 
