@@ -134,10 +134,22 @@ namespace MrCleanUp
             if (type.ToLower() == "jpg" || 
                 type.ToLower() == "png" || 
                 type.ToLower() == "gif" ||
+                type.ToLower() == "jpeg" ||
+                type.ToLower() == "jpeg" ||
+                type.ToLower() == "tif" ||
+                type.ToLower() == "flv" ||
+                type.ToLower() == "mkv" ||
+                type.ToLower() == "ogg" ||
+                type.ToLower() == "ogv" ||  
+                type.ToLower() == "mov" ||         
+                type.ToLower() == "wma" ||
+                type.ToLower() == "mpeg" ||
+                type.ToLower() == "mpg" ||
+                type.ToLower() == "wmv" ||                     
                 type.ToLower() == "tiff" 
                 )
             {
-                prePath = @"\Images\";
+                prePath = @"\Media\";
             }
             else if (type.ToLower() == "doc" || 
                 type.ToLower() == "docx" || 
@@ -178,6 +190,9 @@ namespace MrCleanUp
                 type.ToLower() == "html" ||
                 type.ToLower() == "css" ||
                 type.ToLower() == "cs" ||
+                type.ToLower() == "csv" ||
+                type.ToLower() == "xml" ||
+                type.ToLower() == "htm" ||
                 type.ToLower() == "sql" ||
                 type.ToLower() == "json" ||
                 type.ToLower() == "js" ||
