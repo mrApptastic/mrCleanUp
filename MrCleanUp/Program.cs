@@ -133,24 +133,68 @@ namespace MrCleanUp
 
             if (type.ToLower() == "jpg" || 
                 type.ToLower() == "png" || 
-                type.ToLower() == "psd" ||
                 type.ToLower() == "gif" ||
-                type.ToLower() == "tiff"
+                type.ToLower() == "tiff" 
                 )
             {
                 prePath = @"\Images\";
             }
             else if (type.ToLower() == "doc" || 
-                     type.ToLower() == "docx" || 
-                     type.ToLower() == "txt" || 
-                     type.ToLower() == "rtf" ||
-                     type.ToLower() == "odt" || 
-                     type.ToLower() == "xls" || 
-                     type.ToLower() == "pdf" ||
-                     type.ToLower() == "xlsx"
+                type.ToLower() == "docx" || 
+                type.ToLower() == "txt" || 
+                type.ToLower() == "rtf" ||
+                type.ToLower() == "odt" || 
+                type.ToLower() == "xls" || 
+                type.ToLower() == "pdf" ||
+                type.ToLower() == "xlsx" ||
+                type.ToLower() == "xlsm" ||
+                type.ToLower() == "pps" ||
+                type.ToLower() == "pptx" ||
+                type.ToLower() == "ods" ||
+                type.ToLower() == "pub" ||
+                type.ToLower() == "xps"
                      )
             {
                 prePath = @"\Documents\";
+            }
+            else if (type.ToLower() == "vcd" ||
+                type.ToLower() == "bin" ||
+                type.ToLower() == "cue" ||
+                type.ToLower() == "daa" ||
+                type.ToLower() == "iso"
+                )
+            {
+                prePath = @"\Discs\";
+            }
+            else if (type.ToLower() == "eot" ||
+                type.ToLower() == "ttf" ||
+                type.ToLower() == "woff" ||
+                type.ToLower() == "woff2" ||
+                type.ToLower() == "otf")
+            {
+                prePath = @"\Fonts\";
+            }
+            else if (type.ToLower() == "exe" ||
+                type.ToLower() == "html" ||
+                type.ToLower() == "css" ||
+                type.ToLower() == "cs" ||
+                type.ToLower() == "sql" ||
+                type.ToLower() == "json" ||
+                type.ToLower() == "js" ||
+                type.ToLower() == "rar" ||
+                type.ToLower() == "zip" ||
+                type.ToLower() == "rss" ||
+                type.ToLower() == "bat")
+            {
+                prePath = @"\Software\";
+            }
+            else if (type.ToLower() == "psd" ||
+                type.ToLower() == "eps" ||
+                type.ToLower() == "svg" ||
+                type.ToLower() == "ai" ||
+                type.ToLower() == "indd")
+            {
+                prePath = @"\Graphics\";
             }
 
             // string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\" + modified.ToString("yyyy-MM-dd") + @"\";
