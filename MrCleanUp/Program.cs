@@ -29,6 +29,8 @@ namespace MrCleanUp
 
                 foreach (var file in files)
                 {
+                    int year = File.GetCreationTime(file).Year;
+
                     try
                     {
                         TagLib.File f = TagLib.File.Create(file);
@@ -43,7 +45,8 @@ namespace MrCleanUp
                             SaveMediaFile(file,
                                      RemoveChars.Replace(type, "").Trim(),
                                      RemoveChars.Replace(artists, "").Trim(),
-                                     RemoveChars.Replace(album, "").Trim()
+                                     RemoveChars.Replace(album, "").Trim(),
+                                     year
                                      );
                         }
                     }
@@ -51,7 +54,7 @@ namespace MrCleanUp
                     {
                         try
                         {
-                            SaveFile(file);
+                            SaveFile(file, year);
                         }
 
                         catch (Exception expt)
@@ -92,7 +95,7 @@ namespace MrCleanUp
 
         }
 
-        static void SaveMediaFile (string file, string type, string artist, string album)
+        static void SaveMediaFile (string file, string type, string artist, string album, int year)
         {
             string fileName = file.Split('.')[0];
 
@@ -102,7 +105,8 @@ namespace MrCleanUp
                 fileName = fileName.Substring(index);
             }
 
-            string basePath = output + @"\Media\" + type.ToUpper() + @"\" + artist + @"\" + album + @"\";
+            // string basePath = output + @"\Media\" + type.ToUpper() + @"\" + artist + @"\" + album + @"\";
+            string basePath = output + @"\Media\" + @"\" + artist + @"\" + album + @"\" + year + @"\";
             string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
             if (File.Exists(path))
@@ -116,7 +120,7 @@ namespace MrCleanUp
             Console.WriteLine(path);
         }
 
-        static void SaveFile(string file)
+        static void SaveFile(string file, int year)
         {
             string prePath = @"\Other\";
             string author = "";
@@ -213,7 +217,8 @@ namespace MrCleanUp
             }
 
             // string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\" + modified.ToString("yyyy-MM-dd") + @"\";
-            string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\";
+            // string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\";
+            string basePath = output + @"\" + prePath + @"\" + year + @"\";
             string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
             if (File.Exists(path))
