@@ -8,17 +8,24 @@ namespace MrCleanUp
 {
     class Program
     {
-        static string output = @"c:\temp\output";
+        static string output = "";
         static Regex RemoveChars = new Regex(@"[\\/:*?""<>|]");
         static bool exit = false;
 
         static void Main(string[] args)
         {
-            while (!exit) {
-                Console.WriteLine("Write the absolute root path to activate the clean up script:");
-                string input = Console.ReadLine();
-                MapFiles(input);
-            }                       
+            if (args.Length >= 2) {
+                output = args[1];
+                MapFiles(args[0]);
+            } else {
+                while (!exit) {
+                    Console.WriteLine("Write the absolute destination path:");
+                    output = Console.ReadLine();
+                    Console.WriteLine("Write the absolute input path to activate the clean up script:");
+                    string input = Console.ReadLine();
+                    MapFiles(input);
+                }     
+            }                  
         }
 
         static void MapFiles(string directory)
@@ -29,41 +36,61 @@ namespace MrCleanUp
 
                 foreach (var file in files)
                 {
+                    string type = file.Substring(file.LastIndexOf(".") +1);
+                    /* Skip unhandled file types */
+                    if (!Helpers.CheckFileType(type)) {
+                        continue;
+                    }
+
                     int year = File.GetCreationTime(file).Year;
 
-                    try
-                    {
-                        TagLib.File f = TagLib.File.Create(file);
-
-                        string type = f.MimeType.Split(@"/")[1];
-
-                        if (type != "taglib/ini")
-                        {
-                            string artists = f.Tag.JoinedPerformers != null ? f.Tag.JoinedPerformers : "";
-                            string album = f.Tag.Album != null ? f.Tag.Album : "";
-
-                            SaveMediaFile(file,
-                                     RemoveChars.Replace(type, "").Trim(),
-                                     RemoveChars.Replace(artists, "").Trim(),
-                                     RemoveChars.Replace(album, "").Trim(),
-                                     year
-                                     );
-                        }
-                    }
-                    catch (Exception e)
-                    {
+                    if (Helpers.IsImage(type) || Helpers.IsVideo(type) || Helpers.IsDocument(type)) {
                         try
                         {
-                            SaveFile(file, year);
-                        }
+                            TagLib.File f = TagLib.File.Create(file);
 
-                        catch (Exception expt)
+                            type = f.MimeType.Split(@"/")[1];
+
+                            if (type != "taglib/ini")
+                            {
+                                string artists = f.Tag.JoinedPerformers != null ? f.Tag.JoinedPerformers : "";
+                                string album = f.Tag.Album != null ? f.Tag.Album : "";
+
+                                SaveMediaFile(file,
+                                        RemoveChars.Replace(type, "").Trim(),
+                                        RemoveChars.Replace(artists, "").Trim(),
+                                        RemoveChars.Replace(album, "").Trim(),
+                                        year
+                                        );
+                            }
+                        }
+                        catch (Exception e)
                         {
-                            Console.WriteLine(expt.Message);
+                            try
+                            {
+                                SaveFile(file, RemoveChars.Replace(type, "").Trim(), year);
+                            }
+
+                            catch (Exception expt)
+                            {
+                                Console.WriteLine(expt.Message);
+                                continue;
+                            }
+                            Console.WriteLine(e.Message);
                             continue;
                         }
-                        Console.WriteLine(e.Message);
-                        continue;
+                    } else {
+                          try
+                            {
+                                SaveFile(file, RemoveChars.Replace(type, ""), year);
+                            }
+
+                            catch (Exception expt)
+                            {
+                                Console.WriteLine(expt.Message);
+                                continue;
+                            }
+                            continue;
                     }
                 }
 
@@ -105,8 +132,18 @@ namespace MrCleanUp
                 fileName = fileName.Substring(index);
             }
 
+            string folder = @"\Media\";
+
+            if (Helpers.IsAudio(type)) {
+                folder = @"\Music\";
+            } else if (Helpers.IsImage(type)) {
+                folder = @"\Pictures\";
+            } else if (Helpers.IsVideo(type)) {
+                folder = @"\Movies\";          
+            }
+            
             // string basePath = output + @"\Media\" + type.ToUpper() + @"\" + artist + @"\" + album + @"\";
-            string basePath = output + @"\Media\" + @"\" + artist + @"\" + album + @"\" + year + @"\";
+            string basePath = output + folder + @"\" + artist + @"\" + album + @"\" + year + @"\";
             string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
             if (File.Exists(path))
@@ -120,101 +157,74 @@ namespace MrCleanUp
             Console.WriteLine(path);
         }
 
-        static void SaveFile(string file, int year)
+        static void SaveFile(string file, string type, int year)
         {
             string prePath = @"\Other\";
             string author = "";
             DateTime modified = File.GetLastWriteTime(file);
 
             string fileName = file.Substring(0, file.LastIndexOf("."));
-            string type = file.Substring(file.LastIndexOf(".") +1);
+            // string type = file.Substring(file.LastIndexOf(".") + 1);
 
             if (fileName.Contains(@"\"))
             {
                 int index = fileName.LastIndexOf(@"\");
                 fileName = fileName.Substring(index);
             }
-
-            if (type.ToLower() == "jpg" || 
-                type.ToLower() == "png" || 
-                type.ToLower() == "gif" ||
-                type.ToLower() == "jpeg" ||
-                type.ToLower() == "jpeg" ||
-                type.ToLower() == "tif" ||
-                type.ToLower() == "flv" ||
-                type.ToLower() == "mkv" ||
-                type.ToLower() == "ogg" ||
-                type.ToLower() == "ogv" ||  
-                type.ToLower() == "mov" ||         
-                type.ToLower() == "wma" ||
-                type.ToLower() == "mpeg" ||
-                type.ToLower() == "mpg" ||
-                type.ToLower() == "wmv" ||                     
-                type.ToLower() == "tiff" 
-                )
+            
+            if (Helpers.IsBook(type))
             {
-                prePath = @"\Media\";
+                prePath = @"\Books\";
             }
-            else if (type.ToLower() == "doc" || 
-                type.ToLower() == "docx" || 
-                type.ToLower() == "txt" || 
-                type.ToLower() == "rtf" ||
-                type.ToLower() == "odt" || 
-                type.ToLower() == "xls" || 
-                type.ToLower() == "pdf" ||
-                type.ToLower() == "xlsx" ||
-                type.ToLower() == "xlsm" ||
-                type.ToLower() == "pps" ||
-                type.ToLower() == "pptx" ||
-                type.ToLower() == "ods" ||
-                type.ToLower() == "pub" ||
-                type.ToLower() == "xps"
-                     )
+            else if (Helpers.IsImage(type))
+            {
+                prePath = @"\Pictures\";
+            }
+            else if (Helpers.IsAudio(type))
+            {
+                prePath = @"\Music\";
+            }
+            else if (Helpers.IsVideo(type))
+            {
+                prePath = @"\Movies\";
+            }
+            else if (Helpers.IsDocument(type))
             {
                 prePath = @"\Documents\";
             }
-            else if (type.ToLower() == "vcd" ||
-                type.ToLower() == "bin" ||
-                type.ToLower() == "cue" ||
-                type.ToLower() == "daa" ||
-                type.ToLower() == "iso"
-                )
+            else if (Helpers.IsDisc(type))
             {
                 prePath = @"\Discs\";
             }
-            else if (type.ToLower() == "eot" ||
-                type.ToLower() == "ttf" ||
-                type.ToLower() == "woff" ||
-                type.ToLower() == "woff2" ||
-                type.ToLower() == "otf")
+            else if (Helpers.IsFont(type))
             {
                 prePath = @"\Fonts\";
             }
-            else if (type.ToLower() == "exe" ||
-                type.ToLower() == "html" ||
-                type.ToLower() == "css" ||
-                type.ToLower() == "cs" ||
-                type.ToLower() == "csv" ||
-                type.ToLower() == "xml" ||
-                type.ToLower() == "htm" ||
-                type.ToLower() == "sql" ||
-                type.ToLower() == "json" ||
-                type.ToLower() == "js" ||
-                type.ToLower() == "rar" ||
-                type.ToLower() == "zip" ||
-                type.ToLower() == "rss" ||
-                type.ToLower() == "bat")
-            {
-                prePath = @"\Software\";
-            }
-            else if (type.ToLower() == "psd" ||
-                type.ToLower() == "eps" ||
-                type.ToLower() == "svg" ||
-                type.ToLower() == "ai" ||
-                type.ToLower() == "indd")
-            {
-                prePath = @"\Graphics\";
-            }
+            // else if (type.ToLower() == "exe" ||
+            //     type.ToLower() == "html" ||
+            //     type.ToLower() == "css" ||
+            //     type.ToLower() == "cs" ||
+            //     type.ToLower() == "csv" ||
+            //     type.ToLower() == "xml" ||
+            //     type.ToLower() == "htm" ||
+            //     type.ToLower() == "sql" ||
+            //     type.ToLower() == "json" ||
+            //     type.ToLower() == "js" ||
+            //     type.ToLower() == "rar" ||
+            //     type.ToLower() == "zip" ||
+            //     type.ToLower() == "rss" ||
+            //     type.ToLower() == "bat")
+            // {
+            //     prePath = @"\Software\";
+            // }
+            // else if (type.ToLower() == "psd" ||
+            //     type.ToLower() == "eps" ||
+            //     type.ToLower() == "svg" ||
+            //     type.ToLower() == "ai" ||
+            //     type.ToLower() == "indd")
+            // {
+            //     prePath = @"\Graphics\";
+            // }
 
             // string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\" + modified.ToString("yyyy-MM-dd") + @"\";
             // string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\";
