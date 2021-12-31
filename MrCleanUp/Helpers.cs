@@ -1,3 +1,8 @@
+using System.IO;
+using System.Security.AccessControl;
+using System.Security.Principal;
+using DocumentFormat.OpenXml.Packaging;
+
 namespace MrCleanUp
 {
     class Helpers
@@ -105,6 +110,28 @@ namespace MrCleanUp
                 return true;
             } else {
                 return false;
+            }
+        }
+
+        public static string GetAuthor(string path)
+        {
+             var security = new FileSecurity(path, 
+                AccessControlSections.Owner | 
+                AccessControlSections.Group |
+                AccessControlSections.Access);
+
+            return security.GetOwner(typeof(NTAccount)).ToString();
+        }
+
+        public static string GetAuthor2(string documentPath)
+        {
+            try {
+                using (var document = WordprocessingDocument.Open(documentPath, false))
+                {
+                    return document.PackageProperties.Creator;
+                }
+            } catch {
+                return "";
             }
         }
 

@@ -160,7 +160,7 @@ namespace MrCleanUp
         static void SaveFile(string file, string type, int year)
         {
             string prePath = @"\Other\";
-            string author = "";
+            string author = Helpers.GetAuthor(file);
             DateTime modified = File.GetLastWriteTime(file);
 
             string fileName = file.Substring(0, file.LastIndexOf("."));
@@ -228,7 +228,7 @@ namespace MrCleanUp
 
             // string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\" + modified.ToString("yyyy-MM-dd") + @"\";
             // string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\";
-            string basePath = output + @"\" + prePath + @"\" + year + @"\";
+            string basePath = output + @"\" + prePath + @"\" + year + @"\" + (author.Length > 0 ? (author.Replace(@"\", "-") + @"\") : "");
             string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
             if (File.Exists(path))
