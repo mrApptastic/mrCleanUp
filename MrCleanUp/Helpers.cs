@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using DocumentFormat.OpenXml.Packaging;
+using Novacode;
 
 namespace MrCleanUp
 {
@@ -115,12 +117,36 @@ namespace MrCleanUp
 
         public static string GetAuthor(string path)
         {
+            try {
+                return GetAuthorFromMSOffice(path);
+            } catch {
+                return GetAuthorFromOtherFileType(path);
+            }
+        }
+
+        private static string GetAuthorFromMSOffice(string path)
+        {
+            DocX doc = DocX.Load(path);
+            
+            var props = doc.CoreProperties;
+
+            return props["dc:creator"];            
+        }
+
+        private static string GetAuthorFromOtherFileType(string path)
+        {
              var security = new FileSecurity(path, 
                 AccessControlSections.Owner | 
                 AccessControlSections.Group |
                 AccessControlSections.Access);
 
-            return security.GetOwner(typeof(NTAccount)).ToString();
+            var owner = security.GetOwner(typeof(NTAccount)).ToString();
+
+            if (owner.Contains(@"\")) {
+                owner = owner.Split(@"\")[1];
+            }
+
+            return owner.Substring(0, 1).ToUpper() + owner.Substring(1).ToLower();
         }
 
         public static string GetAuthor2(string documentPath)
@@ -134,7 +160,5 @@ namespace MrCleanUp
                 return "";
             }
         }
-
-
     }
 }

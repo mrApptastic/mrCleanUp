@@ -42,7 +42,7 @@ namespace MrCleanUp
                         continue;
                     }
 
-                    int year = File.GetCreationTime(file).Year;
+                    int year = File.GetLastWriteTime(file).Year;
 
                     if (Helpers.IsImage(type) || Helpers.IsVideo(type) || Helpers.IsDocument(type)) {
                         try
@@ -160,7 +160,14 @@ namespace MrCleanUp
         static void SaveFile(string file, string type, int year)
         {
             string prePath = @"\Other\";
-            string author = Helpers.GetAuthor(file);
+            string author;
+
+            try {
+                author = Helpers.GetAuthor(file);
+            } catch {
+                author = "";
+            }
+
             DateTime modified = File.GetLastWriteTime(file);
 
             string fileName = file.Substring(0, file.LastIndexOf("."));
@@ -200,35 +207,8 @@ namespace MrCleanUp
             {
                 prePath = @"\Fonts\";
             }
-            // else if (type.ToLower() == "exe" ||
-            //     type.ToLower() == "html" ||
-            //     type.ToLower() == "css" ||
-            //     type.ToLower() == "cs" ||
-            //     type.ToLower() == "csv" ||
-            //     type.ToLower() == "xml" ||
-            //     type.ToLower() == "htm" ||
-            //     type.ToLower() == "sql" ||
-            //     type.ToLower() == "json" ||
-            //     type.ToLower() == "js" ||
-            //     type.ToLower() == "rar" ||
-            //     type.ToLower() == "zip" ||
-            //     type.ToLower() == "rss" ||
-            //     type.ToLower() == "bat")
-            // {
-            //     prePath = @"\Software\";
-            // }
-            // else if (type.ToLower() == "psd" ||
-            //     type.ToLower() == "eps" ||
-            //     type.ToLower() == "svg" ||
-            //     type.ToLower() == "ai" ||
-            //     type.ToLower() == "indd")
-            // {
-            //     prePath = @"\Graphics\";
-            // }
 
-            // string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\" + modified.ToString("yyyy-MM-dd") + @"\";
-            // string basePath = output + @"\" + prePath + @"\" + type.ToUpper() + @"\";
-            string basePath = output + @"\" + prePath + @"\" + year + @"\" + (author.Length > 0 ? (author.Replace(@"\", "-") + @"\") : "");
+            string basePath = output + @"\" + prePath + @"\" + (author.Length > 0 ? (author + @"\") : "") + year + @"\";
             string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
             if (File.Exists(path))
