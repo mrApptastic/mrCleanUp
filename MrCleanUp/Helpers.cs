@@ -59,6 +59,7 @@ namespace MrCleanUp
                 type.ToLower() == "png" || 
                 type.ToLower() == "gif" ||
                 type.ToLower() == "jpeg" ||
+                type.ToLower() == "bmp" ||  
                 type.ToLower() == "tif" ||                   
                 type.ToLower() == "tiff" 
                 ) {
@@ -88,6 +89,9 @@ namespace MrCleanUp
                 type.ToLower() == "mpg" ||
                 type.ToLower() == "wmv" ||
                 type.ToLower() == "3gp" ||
+                type.ToLower() == "flac" ||
+                type.ToLower() == "avi" ||
+                type.ToLower() == "m4a" ||
                 type.ToLower() == "mp4") {
                 return true;
             } else {
