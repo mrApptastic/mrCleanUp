@@ -146,10 +146,16 @@ namespace MrCleanUp
             string basePath = output + folder + @"\" + artist + @"\" + album + @"\" + year + @"\";
             string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
-            if (File.Exists(path))
+            // if (File.Exists(path))
+            // {
+            //     Console.WriteLine("File already exists: " + path);
+            //     path = basePath + fileName + "-" + "DUBLET" + "-" + DateTime.Now.Ticks + "." + type.ToLower();
+
+            // }
+            if (File.Exists(path) || fileName.Contains("-DUBLET-")) 
             {
                 Console.WriteLine("File already exists: " + path);
-                path = basePath + fileName + "-" + "DUBLET" + "-" + DateTime.Now.Ticks + "." + type.ToLower();
+                path = (output + @"\Doublets\" + @"\") + fileName + "-" + (!fileName.Contains("-DUBLET-") ? ("DUBLET" + "-" + DateTime.Now.Ticks) : "") + "." + type.ToLower();
 
             }
             File.Move(file, path, false);
@@ -207,14 +213,28 @@ namespace MrCleanUp
             {
                 prePath = @"\Fonts\";
             }
+            else if (Helpers.IsArchive(type))
+            {
+                prePath = @"\Archives\";
+            }
+            else if (Helpers.IsGraphics(type))
+            {
+                prePath = @"\Graphics\";
+            }
 
             string basePath = output + @"\" + prePath + @"\" + (author.Length > 0 ? (author + @"\") : "") + year + @"\";
             string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
-            if (File.Exists(path))
+            // if (File.Exists(path))
+            // {
+            //     Console.WriteLine("File already exists: " + path);
+            //     path = basePath + fileName + "-" + "DUBLET" + "-" + DateTime.Now.Ticks + "." + type.ToLower();
+
+            // }
+            if (File.Exists(path) || fileName.Contains("-DUBLET-"))
             {
                 Console.WriteLine("File already exists: " + path);
-                path = basePath + fileName + "-" + "DUBLET" + "-" + DateTime.Now.Ticks + "." + type.ToLower();
+                path = (output + @"\Doublets\" + @"\") + fileName + "-" + (!fileName.Contains("-DUBLET-") ? ("DUBLET" + "-" + DateTime.Now.Ticks) : "") + "." + type.ToLower();
 
             }
             File.Move(file, path, false);

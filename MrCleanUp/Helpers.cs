@@ -115,6 +115,28 @@ namespace MrCleanUp
             }
         }
 
+        public static bool IsArchive(string type) {
+            if (type.ToLower() == "zip" ||
+                type.ToLower() == "rar") {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public static bool IsGraphics(string type) {
+            if (type.ToLower() == "psd" ||
+                type.ToLower() == "eps" ||
+                type.ToLower() == "svg" ||
+                type.ToLower() == "indd" ||
+                type.ToLower() == "ai" ||
+                type.ToLower() == "xcf") {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         public static string GetAuthor(string path)
         {
             try {
