@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.AccessControl;
@@ -17,7 +18,9 @@ namespace MrCleanUp
                 IsDisc(type) ||
                 IsFont(type) ||
                 IsImage(type) ||
-                IsVideo(type)
+                IsVideo(type) ||
+                IsArchive(type) ||
+                IsGraphics(type)
             );
         }
 
@@ -83,7 +86,9 @@ namespace MrCleanUp
                 type.ToLower() == "mov" ||         
                 type.ToLower() == "mpeg" ||
                 type.ToLower() == "mpg" ||
-                type.ToLower() == "wmv") {
+                type.ToLower() == "wmv" ||
+                type.ToLower() == "3gp" ||
+                type.ToLower() == "mp4") {
                 return true;
             } else {
                 return false;
@@ -128,6 +133,7 @@ namespace MrCleanUp
             if (type.ToLower() == "psd" ||
                 type.ToLower() == "eps" ||
                 type.ToLower() == "svg" ||
+                type.ToLower() == "svgz" ||
                 type.ToLower() == "indd" ||
                 type.ToLower() == "ai" ||
                 type.ToLower() == "xcf") {
@@ -152,7 +158,7 @@ namespace MrCleanUp
             
             var props = doc.CoreProperties;
 
-            return props["dc:creator"];            
+            return props["dc:creator"].Replace("|", "");            
         }
 
         private static string GetAuthorFromOtherFileType(string path)
@@ -181,6 +187,33 @@ namespace MrCleanUp
             } catch {
                 return "";
             }
+        }
+
+        public static bool IsExactSameSize(string file1, string file2)
+        {
+            return new FileInfo(file1).Length ==  new FileInfo(file2).Length;
+        }
+
+        public static string RemoveDateSuffix(string ib) {
+            ib = ib.Replace("-", "").Trim();
+
+            while (DateSuffixCheck(ib)) {
+                string type = ib.Substring(ib.LastIndexOf("."));
+                ib = ib.Substring(0, ib.Length - (18 + type.Length)) + type;
+            }
+
+            return ib;
+        }
+
+        private static bool DateSuffixCheck(string lilleIb) {
+            if (lilleIb.Length >= 18) {
+                string bo = lilleIb.Substring(0, lilleIb.LastIndexOf("."));
+                string tom = bo.Substring(bo.Length - 18, 18);
+                long.TryParse(tom, out long numberOfTicks);
+                return new DateTime(numberOfTicks).Year > 2015;
+            }
+
+            return false;                                 
         }
     }
 }

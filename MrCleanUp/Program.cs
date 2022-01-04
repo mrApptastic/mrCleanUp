@@ -17,6 +17,10 @@ namespace MrCleanUp
             if (args.Length >= 2) {
                 output = args[1];
                 MapFiles(args[0]);
+                if (args.Length >= 3 && args[2] == "1") {
+                    Console.WriteLine("All Done!");
+                   string bob = Console.ReadLine();
+                }               
             } else {
                 while (!exit) {
                     Console.WriteLine("Write the absolute destination path:");
@@ -142,22 +146,49 @@ namespace MrCleanUp
                 folder = @"\Movies\";          
             }
             
-            // string basePath = output + @"\Media\" + type.ToUpper() + @"\" + artist + @"\" + album + @"\";
             string basePath = output + folder + @"\" + artist + @"\" + album + @"\" + year + @"\";
+
             string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
-            // if (File.Exists(path))
-            // {
-            //     Console.WriteLine("File already exists: " + path);
-            //     path = basePath + fileName + "-" + "DUBLET" + "-" + DateTime.Now.Ticks + "." + type.ToLower();
 
-            // }
-            if (File.Exists(path) || fileName.Contains("-DUBLET-")) 
-            {
-                Console.WriteLine("File already exists: " + path);
-                path = (output + @"\Doublets\" + @"\") + fileName + "-" + (!fileName.Contains("-DUBLET-") ? ("DUBLET" + "-" + DateTime.Now.Ticks) : "") + "." + type.ToLower();
+            string checkPath = path.Contains("-") ? path.Split("-")[0] + "."  + type.ToLower() : path;
 
+            if (File.Exists(checkPath)) {
+                /* This is indeed a doublet */
+                if (Helpers.IsExactSameSize(file, checkPath)) {
+                    string doubletBasePath = output + @"\Doublets\" + @"\";
+                    Directory.CreateDirectory(doubletBasePath);
+                    Console.WriteLine("File already exists: " + path);
+                    path = doubletBasePath + fileName + "-" + (!fileName.Contains("-DUBLET-") ? ("DUBLET" + "-" + DateTime.Now.Ticks) : "") + "." + type.ToLower();
+                } 
+                /* This is - after all - not a doublet - run roll back */
+                else {
+                    if (fileName.Contains("-DUBLET-")) {
+                        string dubby = path.Replace("-DUBLET-", "-");
+                        dubby = Helpers.RemoveDateSuffix(path);
+                        if (!File.Exists(dubby)) {
+                            path = dubby;
+                        }                        
+                    } else if (File.Exists(path)) {
+                        path = basePath + fileName + "-" + DateTime.Now.Ticks + "." + type.ToLower();
+                    } else {
+                        string uha = Helpers.RemoveDateSuffix(path);
+                        if (!File.Exists(uha)) {
+                            path = uha;
+                        } 
+                    }
+                }
+ 
             }
+            /* This is - after all - not a doublet - run roll back */
+            else if (fileName.Contains("-DUBLET-")) {
+                string dubby = path.Replace("-DUBLET-", "-");
+                dubby = Helpers.RemoveDateSuffix(path);
+                if (!File.Exists(dubby)) {
+                    path = dubby;
+                } 
+            }
+
             File.Move(file, path, false);
 
             Console.WriteLine(path);
@@ -225,21 +256,49 @@ namespace MrCleanUp
             string basePath = output + @"\" + prePath + @"\" + (author.Length > 0 ? (author + @"\") : "") + year + @"\";
             string path = basePath + fileName + "." + type.ToLower();
             Directory.CreateDirectory(basePath);
-            // if (File.Exists(path))
-            // {
-            //     Console.WriteLine("File already exists: " + path);
-            //     path = basePath + fileName + "-" + "DUBLET" + "-" + DateTime.Now.Ticks + "." + type.ToLower();
 
-            // }
-            if (File.Exists(path) || fileName.Contains("-DUBLET-"))
-            {
-                Console.WriteLine("File already exists: " + path);
-                path = (output + @"\Doublets\" + @"\") + fileName + "-" + (!fileName.Contains("-DUBLET-") ? ("DUBLET" + "-" + DateTime.Now.Ticks) : "") + "." + type.ToLower();
+            string checkPath = path.Contains("-") ? path.Split("-")[0] + "."  + type.ToLower() : path;
 
+            if (File.Exists(checkPath)) {
+                /* This is indeed a doublet */
+                if (Helpers.IsExactSameSize(file, checkPath)) {
+                    string doubletBasePath = output + @"\Doublets\" + @"\";
+                    Directory.CreateDirectory(doubletBasePath);
+                    Console.WriteLine("File already exists: " + path);
+                    path = doubletBasePath + fileName + "-" + (!fileName.Contains("-DUBLET-") ? ("DUBLET" + "-" + DateTime.Now.Ticks) : "") + "." + type.ToLower();
+                } 
+                /* This is - after all - not a doublet - run roll back */
+                else {
+                    if (fileName.Contains("-DUBLET-")) {
+                        string dubby = path.Replace("-DUBLET-", "-");
+                        dubby = Helpers.RemoveDateSuffix(path);
+                        if (!File.Exists(dubby)) {
+                            path = dubby;
+                        }                        
+                    } else if (File.Exists(path)) {
+                        path = basePath + fileName + "-" + DateTime.Now.Ticks + "." + type.ToLower();
+                    } else {
+                        string uha = Helpers.RemoveDateSuffix(path);
+                        if (!File.Exists(uha)) {
+                            path = uha;
+                        } 
+                    }
+                }
+ 
             }
+            /* This is - after all - not a doublet - run roll back */
+            else if (fileName.Contains("-DUBLET-")) {
+                string dubby = path.Replace("-DUBLET-", "-");
+                dubby = Helpers.RemoveDateSuffix(path);
+                if (!File.Exists(dubby)) {
+                    path = dubby;
+                } 
+            }
+
             File.Move(file, path, false);
 
             Console.WriteLine(path);
-        }
+        }      
+
     }
 }
